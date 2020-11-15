@@ -49,28 +49,33 @@ def logarithmic(mv):
     n = mv[0][0]
     #  измеенное значение времени обработки этого количества
     f1_n = mv[0][2]
+    c1_n = mv[0][1]
     # Коэффициент пропорциональности
-    k = f1_n / math.log(n, 2)
+    kt = f1_n / math.log(n, 2)
+    kc = c1_n / math.log(n, 2)
     # перечень отклонений по всем точкам
     V = []
     # значеня функции
     FN =  []
+    CN = []
     # аналитическая функция для сопоставления с измерениями
     f = lambda k, n: k * math.log(n, 2)
 
     # для каждой точки
     for n, _, f1_n in mv:
         # теоретическое значение времени выполнения полученное как функция от количества элементов n
-        f_n = f(k, n)
+        f_n = f(kt, n)
+        c_n = f(kc, n)
         # отклонение теоретического значения от измеренного
         v = (f_n - f1_n) / f1_n
         V.append(v)
         FN.append(f_n)
+        CN.append(c_n)
 
     # среднее отклоненние
     average_v = statistics.mean(V)
 
-    return (average_v, 'logarithmic', 0.0, FN)
+    return (average_v, 'logarithmic', 0.0, FN, CN)
 
 
 def linear(mv):
@@ -78,28 +83,33 @@ def linear(mv):
     n = mv[0][0]
     #  измеенное значение времени обработки этого количества
     f1_n = mv[0][2]
+    c1_n = mv[0][1]
     # Коэффициент пропорциональности
-    k = f1_n / n
+    kt = f1_n / n
+    kc = c1_n / n
     # перечень отклонений по всем точкам
     V = []
     # значеня функции
     FN = []
+    CN = []
     # аналитическая функция для сопоставления с измерениями
     f = lambda k, n: k * n
 
     # для каждой точки
     for n, _, f1_n in mv:
         # теоретическое значение времени выполнения полученное как функция от количества элементов n
-        f_n = f(k, n)
+        f_n = f(kt, n)
+        c_n = f(kc, n)
         # отклонение теоретического значения от измеренного
         v = (f_n - f1_n) / f1_n
         V.append(v)
         FN.append(f_n)
+        CN.append(c_n)
 
     # среднее отклоненние
     average_v = statistics.mean(V)
 
-    return (average_v, 'linear', 0.0, FN)
+    return (average_v, 'linear', 0.0, FN, CN)
 
 
 def quasilinear(mv):
@@ -107,33 +117,40 @@ def quasilinear(mv):
     n = mv[0][0]
     #  измеенное значение времени обработки этого количества
     f1_n = mv[0][2]
+    c1_n = mv[0][1]
     # Коэффициент пропорциональности
-    k = f1_n / (n * math.log(n, 2))
+    kt = f1_n / (n * math.log(n, 2))
+    kc = c1_n / (n * math.log(n, 2))
     # перечень отклонений по всем точкам
     V = []
     # значеня функции
     FN = []
+    CN = []
     # аналитическая функция для сопоставления с измерениями
     f = lambda k, n: k * n * math.log(n, 2)
 
     # для каждой точки
     for n, _, f1_n in mv:
         # теоретическое значение времени выполнения полученное как функция от количества элементов n
-        f_n = f(k, n)
+        f_n = f(kt, n)
+        c_n = f(kc, n)
         # отклонение теоретического значения от измеренного
         v = (f_n - f1_n) / f1_n
         V.append(v)
         FN.append(f_n)
+        CN.append(c_n)
 
     # среднее отклоненние
     average_v = statistics.mean(V)
 
-    return (average_v, 'quasilinear', 0.0, FN)
+    return (average_v, 'quasilinear', 0.0, FN, CN)
 
 poly_FN = []
+poly_CN = []
 # polynomial and quadratic
 def polynomial(mv):
     global poly_FN
+    global poly_CN
 
     # участок поиска
     # a <= p <= b
@@ -142,10 +159,14 @@ def polynomial(mv):
     # до какой точности будем искать
     epsilon = 0.02
     # найти подходящую степень
-    p_opt = goldensection(g, mv, a, b, epsilon)
+    p_opt = goldensection(polynomial_operating_time_costs, mv, a, b, epsilon)
 
     # получить отклонение для функции и найденной степени
-    average_v = g(mv, p_opt)
+    average_v = polynomial_operating_time_costs(mv, p_opt)
+
+    # найти подходящую степень
+    p_opt = goldensection(polynomial_number_of_operations_costs, mv, a, b, epsilon)
+    polynomial_number_of_operations_costs(mv, p_opt)
 
     fit_function = 'polynomial'
 
@@ -153,12 +174,12 @@ def polynomial(mv):
     if p_opt < 3:
         fit_function = 'quadratic'
 
-    return (average_v, fit_function, p_opt, poly_FN)
+    return (average_v, fit_function, p_opt, poly_FN, poly_CN)
 
 
 # polynomial and quadratic
-# функция для одномерной оптимизации
-def g(mv, p):
+# функция для одномерной оптимизации g(x)
+def polynomial_operating_time_costs(mv, p):
     global poly_FN
     poly_FN = []
 
@@ -186,15 +207,45 @@ def g(mv, p):
 
     return average_v
 
+# трудозатраты
+def polynomial_number_of_operations_costs(mv, p):
+    global poly_CN
+
+    poly_CN = []
+
+    #  количество элементов
+    n = mv[0][0]
+    #  измеенное значение счетчика
+    c1_n = mv[0][1]
+    # Коэффициент пропорциональности
+    k = c1_n / math.pow(n, p)
+    # перечень отклонений по всем точкам
+    V = []
+    # аналитическая функция для сопоставления с измерениями
+    f = lambda k, p, n: k * math.pow(n, p)
+
+    for n, _, _ in mv:
+        # теоретическое значение времени выполнения полученное как функция от количества элементов n
+        c_n = f(k, p, n)
+        # отклонение теоретического значения от измеренного
+        v = (c_n - c1_n) / c1_n
+        V.append(v)
+        poly_CN.append(c_n)
+
+    # среднее отклоненние
+    average_v = statistics.mean(V)
+
+    return average_v
+
 
 def goldensection(g, args, a0, b0, epsilon):
     """
     Golden section or golden ratio algorithm
-    :param g:
-    :param args:
-    :param a0:
-    :param b0:
-    :param epsilon:
+    :param g: one dimensional function for optimizing
+    :param args: non volatile function's params
+    :param a0: low optimization limit
+    :param b0: high optimization limit
+    :param epsilon: accuracy or measure
     :return:
     """
     # Номер шага
@@ -203,9 +254,6 @@ def goldensection(g, args, a0, b0, epsilon):
     # Отклонение от середины отрезка влево, вправо
     left = 0.0
     right = 0.0
-
-    # Величина на которую мы отклонимся от середины отрезка
-    deviation = 0.5 * epsilon
 
     # Точка минимума
     x_min = 0.0
@@ -226,6 +274,8 @@ def goldensection(g, args, a0, b0, epsilon):
     k = 1
     #   Пока длина отрезка больше заданной точности
     while (bk - ak) >= epsilon and k < niterations:
+        k += 1
+
         # Деллим отрезок в пропрорции золотого сечения
         left = ak + (bk - ak) * n
         right = ak + (bk - ak) * m
@@ -292,11 +342,13 @@ def linear_test():
 
     n = [n for n, _, _ in measured_values]
     f1_n = [f1_n for _, _, f1_n in measured_values]
+    c1_n = [c1_n for _, c1_n, _ in measured_values]
     f_n = []
+    c_n = []
 
     # опредилить наиболее подходящую аналитическую функцию
     for f in analytically_defined_functions:
-        average_v, fit, _, fn = analytically_defined_functions[f](measured_values)
+        average_v, fit, _, fn, cn = analytically_defined_functions[f](measured_values)
         print(f'\ttrying {f} -> var:{average_v}%')
 
         # запомнить лучшее отклонение
@@ -304,14 +356,23 @@ def linear_test():
             var_opt = average_v
             most_fit_function = fit
             f_n = fn
+            c_n = cn
 
     print(f'\nThe fittest function is {most_fit_function} time with variance {var_opt}%\n\n')
 
+    plt.subplot(121)
     plt.plot(n, f1_n, "-r", label="measured")
     plt.plot(n, f_n, "-b", label="model")
     plt.legend()
     plt.xlabel("N, quantity")
     plt.ylabel("Time, ms")
+    plt.grid(True)
+    plt.subplot(122)
+    plt.plot(n, c1_n, "--r", label="measured")
+    plt.plot(n, c_n, "--b", label="model")
+    plt.legend()
+    plt.xlabel("N, quantity")
+    plt.ylabel("Number of operations, quantity")
     plt.grid(True)
     plt.show()
 
@@ -339,11 +400,13 @@ def quasilinear_test():
 
     n = [n for n, _, _ in measured_values]
     f1_n = [f1_n for _, _, f1_n in measured_values]
+    c1_n = [c1_n for _, c1_n, _ in measured_values]
     f_n = []
+    c_n = []
 
     # опредилить наиболее подходящую аналитическую функцию
     for f in analytically_defined_functions:
-        average_v, fit, _, fn = analytically_defined_functions[f](measured_values)
+        average_v, fit, _, fn, cn = analytically_defined_functions[f](measured_values)
         print(f'\ttrying {f} -> var:{average_v}%')
 
         # запомнить лучшее отклонение
@@ -351,14 +414,23 @@ def quasilinear_test():
             var_opt = average_v
             most_fit_function = fit
             f_n = fn
+            c_n = cn
 
     print(f'\nThe fittest function is {most_fit_function} time with variance {var_opt}%\n\n')
 
+    plt.subplot(121)
     plt.plot(n, f1_n, "-r", label="measured")
     plt.plot(n, f_n, "-b", label="model")
     plt.legend()
     plt.xlabel("N, quantity")
     plt.ylabel("Time, ms")
+    plt.grid(True)
+    plt.subplot(122)
+    plt.plot(n, c1_n, "--r", label="measured")
+    plt.plot(n, c_n, "--b", label="model")
+    plt.legend()
+    plt.xlabel("N, quantity")
+    plt.ylabel("Number of operations, quantity")
     plt.grid(True)
     plt.show()
 
@@ -388,12 +460,14 @@ def quadratic_test():
 
     n = [n for n, _, _ in measured_values]
     f1_n = [f1_n for _, _, f1_n in measured_values]
+    c1_n = [c1_n for _, c1_n, _ in measured_values]
     f_n = []
+    c_n = []
 
     # опредилить наиболее подходящую аналитическую функцию
     for f in analytically_defined_functions:
 
-        average_v, fit, p_opt, fn = analytically_defined_functions[f](measured_values)
+        average_v, fit, p_opt, fn, cn = analytically_defined_functions[f](measured_values)
         print(f'\ttrying {f} -> var:{average_v}%')
 
         # запомнить лучшее отклонение
@@ -401,14 +475,23 @@ def quadratic_test():
             var_opt = average_v
             most_fit_function = fit
             f_n = fn
+            c_n = cn
 
     print(f'\nThe fittest function is {most_fit_function} time with variance {var_opt}% and power {p_opt}\n\n')
 
+    plt.subplot(121)
     plt.plot(n, f1_n, "-r", label="measured")
     plt.plot(n, f_n, "-b", label="model")
     plt.legend()
     plt.xlabel("N, quantity")
     plt.ylabel("Time, ms")
+    plt.grid(True)
+    plt.subplot(122)
+    plt.plot(n, c1_n, "--r", label="measured")
+    plt.plot(n, c_n, "--b", label="model")
+    plt.legend()
+    plt.xlabel("N, quantity")
+    plt.ylabel("Number of operations, quantity")
     plt.grid(True)
     plt.show()
 

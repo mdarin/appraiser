@@ -2,7 +2,13 @@ QUADRATIC = quadratic
 LINEAR = linear
 QUASILINEAR = quasilinear
 
-all: $(QUADRATIC) $(LINEAR) $(QUASILINEAR)
+all: $(QUADRATIC) $(LINEAR) $(QUASILINEAR) estimations
+
+build: $(QUADRATIC) $(LINEAR) $(QUASILINEAR)
+
+estimations:
+	./run.sh
+
 
 ## quadratic
 

@@ -7,7 +7,6 @@
 #include <string.h>
 #include <time.h>
 
-#define TARGET_WORD "что"
 #define STRLEN_MAX 1000
 
 /*
@@ -38,14 +37,9 @@ int loadfile(FILE* fd){
     Main driver
 */
 int main() { 
-    int i = 0;
-    FILE *fd = fopen("text.txt", "r");
-    char cc[80] = {0};
-    int nwords = loadfile(fd);
+    FILE *fd = fopen("text2.txt", "r");
 
-    // puts("---------------------------------------------");
-
-    // gets(cc);
+    loadfile(fd);
 
     return 0;
 }

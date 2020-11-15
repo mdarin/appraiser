@@ -55,15 +55,7 @@ char **loadfile(FILE *fd){
 int main(){ 
     int i = 0;
     FILE *fd = fopen("text.txt", "r");
-    char cc[80] = {0};
     char **pp = loadfile(fd);
-
-    // puts("---------------------------------------------");
-
-    // gets(cc);
-    // for (i=0; pp[i]!=NULL; i++) {
-    //     printf("%s\n",pp[i]);
-    // }
 
     // убрать за собой
     for (i = 0; pp[i] != NULL; i++) free(pp[i]);

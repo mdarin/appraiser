@@ -7,7 +7,7 @@ all: $(QUADRATIC) $(LINEAR) $(QUASILINEAR) estimations
 build: $(QUADRATIC) $(LINEAR) $(QUASILINEAR)
 
 estimations:
-	./run.sh
+	@./run.sh
 
 
 ## quadratic

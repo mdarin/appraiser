@@ -137,7 +137,7 @@ def polynomial(mv):
 
     # участок поиска
     # a <= p <= b
-    a = 1.8
+    a = 1.75
     b = 10
     # до какой точности будем искать
     epsilon = 0.02
@@ -290,7 +290,7 @@ def linear_test():
     # наиболее подходящая аналитическая зависимость
     most_fit_function = None
 
-    n = [n for n,_,_ in measured_values]
+    n = [n for n, _, _ in measured_values]
     f1_n = [f1_n for _, _, f1_n in measured_values]
     f_n = []
 
@@ -310,8 +310,9 @@ def linear_test():
     plt.plot(n, f1_n, "-r", label="measured")
     plt.plot(n, f_n, "-b", label="model")
     plt.legend()
-    plt.xlabel("N")
-    plt.ylabel("Time")
+    plt.xlabel("N, quantity")
+    plt.ylabel("Time, ms")
+    plt.grid(True)
     plt.show()
 
 
@@ -336,7 +337,7 @@ def quasilinear_test():
     # наиболее подходящая аналитическая зависимость
     most_fit_function = None
 
-    n = [n for n,_,_ in measured_values]
+    n = [n for n, _, _ in measured_values]
     f1_n = [f1_n for _, _, f1_n in measured_values]
     f_n = []
 
@@ -356,8 +357,9 @@ def quasilinear_test():
     plt.plot(n, f1_n, "-r", label="measured")
     plt.plot(n, f_n, "-b", label="model")
     plt.legend()
-    plt.xlabel("N")
-    plt.ylabel("Time")
+    plt.xlabel("N, quantity")
+    plt.ylabel("Time, ms")
+    plt.grid(True)
     plt.show()
 
     
@@ -384,7 +386,7 @@ def quadratic_test():
     # найденная степерь для геометрических и полиномиальных зависимостей
     p_opt = 0.0
 
-    n = [n for n,_,_ in measured_values]
+    n = [n for n, _, _ in measured_values]
     f1_n = [f1_n for _, _, f1_n in measured_values]
     f_n = []
 
@@ -400,13 +402,14 @@ def quadratic_test():
             most_fit_function = fit
             f_n = fn
 
-    print(f'\nThe fittest function is {most_fit_function} time with variance {var_opt}%\n\n')
+    print(f'\nThe fittest function is {most_fit_function} time with variance {var_opt}% and power {p_opt}\n\n')
 
     plt.plot(n, f1_n, "-r", label="measured")
     plt.plot(n, f_n, "-b", label="model")
     plt.legend()
-    plt.xlabel("N")
-    plt.ylabel("Time")
+    plt.xlabel("N, quantity")
+    plt.ylabel("Time, ms")
+    plt.grid(True)
     plt.show()
 
 
